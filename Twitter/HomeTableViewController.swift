@@ -20,9 +20,13 @@ class HomeTableViewController: UITableViewController {
     
     //get tweets from APi
     @objc func getTweets() {
+        
+        //set number of tweets
+        numberOfTweets = 20
+        
         //url var
         let myUrl = "https://api.twitter.com/1.1/statuses/home_timeline.json"
-        let myParams = ["count": 100]
+        let myParams = ["count": numberOfTweets]
         //call api
         TwitterAPICaller.client?.getDictionariesRequest(url: myUrl, parameters: myParams, success: { (tweets:[NSDictionary]) in
             //clear list before storing new
@@ -41,7 +45,40 @@ class HomeTableViewController: UITableViewController {
         })
     }
     
+    //load more tweets
+    func loadMoreTweets() {
+        //same url as earlier
+        let myUrl = "https://api.twitter.com/1.1/statuses/home_timeline.json"
+        
+        //add more tweets
+        numberOfTweets += 20
+        
+        //reset params
+        let myParams = ["count": numberOfTweets]
+        
+        //call api
+        TwitterAPICaller.client?.getDictionariesRequest(url: myUrl, parameters: myParams, success: { (tweets:[NSDictionary]) in
+            //clear list before storing new
+            self.tweetArray.removeAll()
+            //store tweets locally
+            for tweet in tweets {
+                self.tweetArray.append(tweet)
+            }
+            //reload the data
+            self.tableView.reloadData()
+        //failure clause
+        }, failure: {(Error) in
+            print("Could not retrieve tweets")
+            
+        })
+        
+    }
     
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if (indexPath.row + 1) == tweetArray.count {
+            loadMoreTweets()
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
