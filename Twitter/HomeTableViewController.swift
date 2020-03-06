@@ -15,12 +15,14 @@ class HomeTableViewController: UITableViewController {
     var tweetArray = [NSDictionary]()
     var numberOfTweets: Int!
     
+    //refreshing tweets
+    let myRefreshControl = UIRefreshControl()
     
     //get tweets from APi
-    func getTweets() {
+    @objc func getTweets() {
         //url var
         let myUrl = "https://api.twitter.com/1.1/statuses/home_timeline.json"
-        let myParams = ["count": 10]
+        let myParams = ["count": 100]
         //call api
         TwitterAPICaller.client?.getDictionariesRequest(url: myUrl, parameters: myParams, success: { (tweets:[NSDictionary]) in
             //clear list before storing new
@@ -31,6 +33,7 @@ class HomeTableViewController: UITableViewController {
             }
             //reload the data
             self.tableView.reloadData()
+            self.myRefreshControl.endRefreshing()
         //failure clause
         }, failure: {(Error) in
             print("Could not retrieve tweets")
@@ -44,6 +47,11 @@ class HomeTableViewController: UITableViewController {
         super.viewDidLoad()
         //get tweets
         getTweets()
+        
+        //refresh the tweets
+        myRefreshControl.addTarget(self, action: #selector(getTweets), for: .valueChanged)
+        tableView.refreshControl = myRefreshControl
+        
 
     }
 
